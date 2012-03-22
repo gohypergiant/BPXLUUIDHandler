@@ -41,6 +41,9 @@
 #ifdef __WEAK
 #undef __WEAK
 #endif
+#ifdef __BRIDGE
+#undef __BRIDGE
+#endif
 
 #define HASARC __has_feature(objc_arc)
 
@@ -49,6 +52,7 @@
 #if HASARC
 	#define IF_ARC(ARCBlock, NOARCBlock) ARCBlock
 	#define NO_ARC(NoARCBlock) 
+	#define __BRIDGE __bridge
 	#define STRONG strong
 	#define __STRONG __strong
 	#if HASWEAK
@@ -63,6 +67,7 @@
 #else
 	#define IF_ARC(ARCBlock, NOARCBlock) NOARCBlock
 	#define NO_ARC(NoARCBlock) NoARCBlock
+	#define __BRIDGE 
 	#define STRONG retain
 	#define __STRONG 
 	#define WEAK assign
@@ -86,7 +91,7 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 #if !TARGET_IPHONE_SIMULATOR
 	if ([BPXLUUIDHandler accessGroup])
 	{
-		CFDictionarySetValue(query, kSecAttrAccessGroup, (__bridge CFTypeRef)[BPXLUUIDHandler accessGroup]);
+		CFDictionarySetValue(query, kSecAttrAccessGroup, (__BRIDGE CFTypeRef)[BPXLUUIDHandler accessGroup]);
 	}
 #endif
 	return query;
@@ -121,6 +126,8 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 	
 	CFDataRef dataRef;
 	IF_ARC(
+		   // This CFBridgingRetain will erroneously raise a static analyzer warning in Xcode 4.2.x,
+		   // The warning is fixed in 4.3+
 		   dataRef = CFBridgingRetain([uuid dataUsingEncoding:NSUTF8StringEncoding]);
 		   , 
 		   dataRef = CFRetain([uuid dataUsingEncoding:NSUTF8StringEncoding]);
