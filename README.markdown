@@ -50,6 +50,7 @@ Use and enjoy and provide feedback.
 
 # How to
 
++ Add 'Security.framework' to your project's `Link Binary With Libraries` Build Phase
 + Import BPXLUUIDHandler.h
 + Retrieve the UUID with `[BPXLUUIDHandler UUID]`
 + Done!
