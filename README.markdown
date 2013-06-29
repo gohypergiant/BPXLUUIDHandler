@@ -50,6 +50,7 @@ Use and enjoy and provide feedback.
 
 # How to
 
++ Add Security.framework to your linked libraries
 + Import BPXLUUIDHandler.h
 + Retrieve the UUID with `[BPXLUUIDHandler UUID]`
 + Done!
