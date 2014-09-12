@@ -1,0 +1,19 @@
+{
+  "name": "BPXLUUIDHandler",
+  "version": "0.0.2-CABO",
+  "license": "Apache License, Version 2.0",
+  "platforms": {
+    "ios": null
+  },
+  "summary": "Library to encapsulate all the handling of getting/storing the new UUID.",
+  "homepage": "https://github.com/blackpixel/BPXLUUIDHandler",
+  "authors": {
+    "Doug Russell": "info@blackpixel.com"
+  },
+  "source": {
+    "git": "https://github.com/cabosoft/BPXLUUIDHandler.git",
+    "tag": "0.0.2-CABO"
+  },
+  "source_files": "BPX*.{h,m}",
+  "requires_arc": true
+}
