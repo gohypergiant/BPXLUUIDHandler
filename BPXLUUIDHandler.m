@@ -131,12 +131,14 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 	{
 		CFMutableDictionaryRef passwordDictionaryRef = CFDictionaryCreateMutable(kCFAllocatorDefault, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFDictionarySetValue(passwordDictionaryRef, kSecValueData, dataRef);
+        CFDictionarySetValue(passwordDictionaryRef, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlock);
 		status = SecItemUpdate(query, passwordDictionaryRef);
 		CFRelease(passwordDictionaryRef);
 	}
 	else 
 	{
 		CFDictionarySetValue(query, kSecValueData, dataRef);
+        CFDictionarySetValue(query, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlock);
 		status = SecItemAdd(query, NULL);
 	}
 	
@@ -258,6 +260,30 @@ static NSString *_accessGroup = nil;
 		   [_accessGroup release];
 		   )
 	_accessGroup = accessGroup;
+}
+
++ (BOOL)performBackgroundAccessibilityMigrationWithError:(NSError *__autoreleasing *)error {
+    CFMutableDictionaryRef query = CreateKeychainQueryDictionary();
+    CFDictionarySetValue(query, kSecAttrAccessible, kSecAttrAccessibleWhenUnlocked);
+    
+    CFMutableDictionaryRef update = CFDictionaryCreateMutable(kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFDictionarySetValue(update, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlock);
+
+    OSStatus migrationResult = SecItemUpdate(query, update);
+    
+    CFRelease(query);
+    CFRelease(update);
+    
+    if (migrationResult == noErr)
+        return YES;
+    
+    if (error)
+        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:migrationResult userInfo:nil];
+    
+    if (migrationResult == errSecItemNotFound)
+        return NO;
+    else
+        return YES;
 }
 
 @end
