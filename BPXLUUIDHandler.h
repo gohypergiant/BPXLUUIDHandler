@@ -40,4 +40,6 @@
 + (NSString *)accessGroup;
 + (void)setAccessGroup:(NSString *)accessGroup;
 
++ (BOOL)performBackgroundAccessibilityMigrationWithError:(NSError *__autoreleasing *)error;
+
 @end
