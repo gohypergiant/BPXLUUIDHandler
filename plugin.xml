@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+				xmlns:android="http://schemas.android.com/apk/res/android"
+				id="com.journeyapps.cordova-uuid"
+				version="0.0.1">
+
+	<name>KSUUID</name>
+	<author>Embark Mobile</author>
+	<url>https://github.com/embarkmobile/cordova-ios-uuid</url>
+
+	<description>
+		This plugin allows you to generate a reasonably-persistent UUID for iOS by utilizing the keystore.
+	</description>
+
+	<license>Apache 2.0</license>
+
+	<js-module src="src/www/ksuuid.js" name="ksuuid">
+		<clobbers target="KSUUID"/>
+	</js-module>
+
+	<engines>
+		<engine name="cordova" version=">=3.0.0"/>
+	</engines>
+
+	<platform name="ios">
+		<config-file target="config.xml" parent="/*">
+			<feature name="KSUUID">
+				<param name="ios-package" value="KSUUID"/>
+			</feature>
+		</config-file>
+
+		<framework src="Security.framework"/>
+
+		<source-file src="src/ios/BPXLUUIDHandler.m"/>
+		<source-file src="src/ios/KSUUID.m"/>
+
+		<header-file src="src/ios/BPXLUUIDHandler.h"/>
+		<header-file src="src/ios/KSUUID.h"/>
+	</platform>
+</plugin>
