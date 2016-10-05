@@ -104,7 +104,7 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 	CFRelease(uuidRef);
 	NSString *uuid;
 	IF_ARC(
-		   uuid = objc_retainedObject(uuidStringRef);
+		   uuid = (__bridge NSString *)uuidStringRef;
 		   ,
 		   uuid = [(NSString *)uuidStringRef autorelease];
 		   )
@@ -206,7 +206,7 @@ static NSString *_uuid = nil;
 	if (resultData != NULL) 
 	{
 		IF_ARC(
-			   _uuid = [[NSString alloc] initWithData:objc_retainedObject(resultData) encoding:NSUTF8StringEncoding];
+			   _uuid = [[NSString alloc] initWithData:(__bridge NSData * _Nonnull)resultData encoding:NSUTF8StringEncoding];
 			   ,
 			   _uuid = [[NSString alloc] initWithData:(NSData *)resultData encoding:NSUTF8StringEncoding];
 			   CFRelease(resultData);
