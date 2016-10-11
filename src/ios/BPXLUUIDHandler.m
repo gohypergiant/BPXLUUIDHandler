@@ -99,18 +99,12 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 
 + (NSString *)generateUUID
 {
-#if TARGET_IPHONE_SIMULATOR
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	return [[UIDevice currentDevice] uniqueIdentifier];
-#pragma clang diagnostic pop
-#endif
 	CFUUIDRef uuidRef = CFUUIDCreate(NULL);
 	CFStringRef uuidStringRef = CFUUIDCreateString(NULL, uuidRef);
 	CFRelease(uuidRef);
 	NSString *uuid;
 	IF_ARC(
-		   uuid = objc_retainedObject(uuidStringRef);
+		   uuid = (__bridge NSString *)uuidStringRef;
 		   ,
 		   uuid = [(NSString *)uuidStringRef autorelease];
 		   )
@@ -137,18 +131,20 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 	{
 		CFMutableDictionaryRef passwordDictionaryRef = CFDictionaryCreateMutable(kCFAllocatorDefault, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFDictionarySetValue(passwordDictionaryRef, kSecValueData, dataRef);
+        CFDictionarySetValue(passwordDictionaryRef, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlock);
 		status = SecItemUpdate(query, passwordDictionaryRef);
 		CFRelease(passwordDictionaryRef);
 	}
 	else 
 	{
 		CFDictionarySetValue(query, kSecValueData, dataRef);
+        CFDictionarySetValue(query, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlock);
 		status = SecItemAdd(query, NULL);
 	}
 	
 	if (status != noErr)
 	{
-		NSLog(@"BPXLUUIDHandler Keychain Save Error: %ld", status);
+		NSLog(@"BPXLUUIDHandler Keychain Save Error: %d", (int)status);
 		uuid = nil;
 	}
 	
@@ -182,7 +178,7 @@ static NSString *_uuid = nil;
 		}
 		else // Any other error, log it and return nil
 		{
-			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %ld", status);
+			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %d", (int)status);
 			return nil;
 		}
 	}
@@ -202,7 +198,7 @@ static NSString *_uuid = nil;
 		}
 		else // Any other error, log it and return nil
 		{
-			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %ld", status);
+			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %d", (int)status);
 			return nil;
 		}
 	}
@@ -210,7 +206,7 @@ static NSString *_uuid = nil;
 	if (resultData != NULL) 
 	{
 		IF_ARC(
-			   _uuid = [[NSString alloc] initWithData:objc_retainedObject(resultData) encoding:NSUTF8StringEncoding];
+			   _uuid = [[NSString alloc] initWithData:(__bridge NSData * _Nonnull)resultData encoding:NSUTF8StringEncoding];
 			   ,
 			   _uuid = [[NSString alloc] initWithData:(NSData *)resultData encoding:NSUTF8StringEncoding];
 			   CFRelease(resultData);
@@ -246,7 +242,7 @@ static NSString *_uuid = nil;
 	status = SecItemDelete(query);
 	if (status != noErr)
 	{
-		NSLog(@"BPXLUUIDHandler Keychain Delete Error: %ld", status);
+		NSLog(@"BPXLUUIDHandler Keychain Delete Error: %d", (int)status);
 	}
 	CFRelease(query);
 }
@@ -264,6 +260,30 @@ static NSString *_accessGroup = nil;
 		   [_accessGroup release];
 		   )
 	_accessGroup = accessGroup;
+}
+
++ (BOOL)performBackgroundAccessibilityMigrationWithError:(NSError *__autoreleasing *)error {
+    CFMutableDictionaryRef query = CreateKeychainQueryDictionary();
+    CFDictionarySetValue(query, kSecAttrAccessible, kSecAttrAccessibleWhenUnlocked);
+    
+    CFMutableDictionaryRef update = CFDictionaryCreateMutable(kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    CFDictionarySetValue(update, kSecAttrAccessible, kSecAttrAccessibleAfterFirstUnlock);
+
+    OSStatus migrationResult = SecItemUpdate(query, update);
+    
+    CFRelease(query);
+    CFRelease(update);
+    
+    if (migrationResult == noErr)
+        return YES;
+    
+    if (error)
+        *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:migrationResult userInfo:nil];
+    
+    if (migrationResult == errSecItemNotFound)
+        return NO;
+    else
+        return YES;
 }
 
 @end
