@@ -110,7 +110,7 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 	CFRelease(uuidRef);
 	NSString *uuid;
 	IF_ARC(
-		   uuid = objc_retainedObject(uuidStringRef);
+		   uuid = (__bridge NSString *)uuidStringRef;
 		   ,
 		   uuid = [(NSString *)uuidStringRef autorelease];
 		   )
@@ -148,7 +148,7 @@ static CFMutableDictionaryRef CreateKeychainQueryDictionary(void)
 	
 	if (status != noErr)
 	{
-		NSLog(@"BPXLUUIDHandler Keychain Save Error: %ld", status);
+		NSLog(@"BPXLUUIDHandler Keychain Save Error: %ld", (long)status);
 		uuid = nil;
 	}
 	
@@ -182,7 +182,7 @@ static NSString *_uuid = nil;
 		}
 		else // Any other error, log it and return nil
 		{
-			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %ld", status);
+			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %ld", (long)status);
 			return nil;
 		}
 	}
@@ -202,7 +202,7 @@ static NSString *_uuid = nil;
 		}
 		else // Any other error, log it and return nil
 		{
-			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %ld", status);
+			NSLog(@"BPXLUUIDHandler Unhandled Keychain Error %ld", (long)status);
 			return nil;
 		}
 	}
@@ -210,7 +210,7 @@ static NSString *_uuid = nil;
 	if (resultData != NULL) 
 	{
 		IF_ARC(
-			   _uuid = [[NSString alloc] initWithData:objc_retainedObject(resultData) encoding:NSUTF8StringEncoding];
+			   _uuid = [[NSString alloc] initWithData:(__bridge NSData * _Nonnull)resultData encoding:NSUTF8StringEncoding];
 			   ,
 			   _uuid = [[NSString alloc] initWithData:(NSData *)resultData encoding:NSUTF8StringEncoding];
 			   CFRelease(resultData);
@@ -246,7 +246,7 @@ static NSString *_uuid = nil;
 	status = SecItemDelete(query);
 	if (status != noErr)
 	{
-		NSLog(@"BPXLUUIDHandler Keychain Delete Error: %ld", status);
+		NSLog(@"BPXLUUIDHandler Keychain Delete Error: %ld", (long)status);
 	}
 	CFRelease(query);
 }
